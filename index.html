@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>株式売買記録フォーム</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6 font-sans">
+
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-lg space-y-4">
+    <h1 class="text-xl font-bold text-center text-gray-700">株式売買記録フォーム</h1>
+
+    <!-- コード -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">コード</label>
+      <input id="code" type="number" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="例：7203" required>
+    </div>
+
+    <!-- 銘柄名 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">銘柄名（自動取得）</label>
+      <input id="name" type="text" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100" placeholder="自動入力されます" readonly>
+    </div>
+
+    <!-- 区分 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">区分</label>
+      <div class="mt-1 space-x-4">
+        <label><input type="radio" name="kubun" value="NISA" checked> NISA</label>
+        <label><input type="radio" name="kubun" value="特定"> 特定</label>
+      </div>
+    </div>
+
+    <!-- 保有状況 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">保有状況</label>
+      <div class="mt-1 space-x-4">
+        <label><input type="radio" name="status" value="保有中" checked> 保有中</label>
+        <label><input type="radio" name="status" value="決済済み"> 決済済み</label>
+      </div>
+    </div>
+
+    <!-- 売買日 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">売買日</label>
+      <input id="date" type="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+    </div>
+
+    <!-- 売買種別 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">売買種別</label>
+      <div class="mt-1 space-x-4">
+        <label><input type="radio" name="type" value="買い" checked> 買い</label>
+        <label><input type="radio" name="type" value="売り"> 売り</label>
+      </div>
+    </div>
+
+    <!-- 買値(売値) -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">買値（売値）</label>
+      <input id="price" type="number" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" placeholder="例：1450.5">
+    </div>
+
+    <!-- 売買株数 -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">売買株数</label>
+      <div class="flex flex-wrap gap-2 mt-2">
+        <button type="button" class="px-3 py-1 bg-blue-100 rounded hover:bg-blue-300" onclick="setShares(1)">1</button>
+        <button type="button" class="px-3 py-1 bg-blue-100 rounded hover:bg-blue-300" onclick="setShares(2)">2</button>
+        <button type="button" class="px-3 py-1 bg-blue-100 rounded hover:bg-blue-300" onclick="setShares(3)">3</button>
+        <button type="button" class="px-3 py-1 bg-blue-100 rounded hover:bg-blue-300" onclick="setShares(4)">4</button>
+        <button type="button" class="px-3 py-1 bg-blue-100 rounded hover:bg-blue-300" onclick="setShares(5)">5</button>
+        <button type="button" class="px-3 py-1 bg-blue-100 rounded hover:bg-blue-300" onclick="setShares(6)">6</button>
+        <button type="button" class="px-3 py-1 bg-yellow-200 rounded hover:bg-yellow-400" onclick="enableCustom()">その他</button>
+      </div>
+      <input id="shares" type="number" class="mt-2 block w-full rounded-md border-gray-300 shadow-sm" value="1" placeholder="株数を入力">
+    </div>
+
+    <!-- 送信ボタン -->
+    <div class="text-center">
+      <button id="submitBtn" type="submit" class="mt-4 px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 shadow">送信</button>
+    </div>
+  </div>
+
+  <script>
+    // 初期日付設定
+    document.getElementById("date").value = new Date().toISOString().split("T")[0];
+
+    // 銘柄名取得のための修正
+    document.getElementById("code").addEventListener("blur", async () => {
+      const code = document.getElementById("code").value;
+      if (!code) return;
+
+      // 銘柄名をスプレッドシートから取得するAPIを呼び出す
+      const res = await fetch("https://script.google.com/macros/s/AKfycbz6m782ehTRt6VPSfyKkrG1bLwLn10zQJTc505wqOu-sv5YdsHOf-ttxtLMIlI2pttz3A/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code })
+      });
+
+      const json = await res.json();
+      const name = json.message === "Success" ? json.name : "取得失敗";  // 銘柄名が取得できた場合
+      document.getElementById("name").value = name;
+    });
+
+    // 株数ボタン設定
+    function setShares(val) {
+      document.getElementById("shares").value = val;
+    }
+
+    function enableCustom() {
+      const sharesInput = document.getElementById("shares");
+      sharesInput.focus();
+      sharesInput.select();
+    }
+
+    // フォーム送信処理
+    document.getElementById("submitBtn").addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        code: document.getElementById("code").value,
+        name: document.getElementById("name").value,
+        kubun: document.querySelector('input[name="kubun"]:checked').value,
+        status: document.querySelector('input[name="status"]:checked').value,
+        date: document.getElementById("date").value,
+        type: document.querySelector('input[name="type"]:checked').value,
+        price: document.getElementById("price").value,
+        shares: document.getElementById("shares").value
+      };
+
+      const res = await fetch("https://script.google.com/macros/s/AKfycbz6m782ehTRt6VPSfyKkrG1bLwLn10zQJTc505wqOu-sv5YdsHOf-ttxtLMIlI2pttz3A/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const text = await res.text();
+      alert(text === "Success" ? "送信完了！スプレッドシートに記録されました。" : "送信エラーが発生しました。");
+    });
+  </script>
+
+</body>
+</html>
