@@ -93,7 +93,7 @@
       if (!code) return;
 
       // 銘柄名をスプレッドシートから取得するAPIを呼び出す
-      const res = await fetch("https://script.google.com/macros/s/AKfycbz6m782ehTRt6VPSfyKkrG1bLwLn10zQJTc505wqOu-sv5YdsHOf-ttxtLMIlI2pttz3A/exec", {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbxE9JFKzS74dXg9GgWlMeMTgIIi15giPIbtDwp6MmIUQd32uC-xmkv4VD-EjQncLFGPmQ/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: code })
@@ -130,7 +130,7 @@
         shares: document.getElementById("shares").value
       };
 
-      const res = await fetch("https://script.google.com/macros/s/AKfycbz6m782ehTRt6VPSfyKkrG1bLwLn10zQJTc505wqOu-sv5YdsHOf-ttxtLMIlI2pttz3A/exec", {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbxE9JFKzS74dXg9GgWlMeMTgIIi15giPIbtDwp6MmIUQd32uC-xmkv4VD-EjQncLFGPmQ/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
