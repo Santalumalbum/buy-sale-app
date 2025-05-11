@@ -1,4 +1,4 @@
-const CACHE_NAME = "stock-app-cache-v1";
+const CACHE_NAME = "buy-sale-cache-v1";
 const urlsToCache = [
   "./",
   "./index.html",
@@ -8,7 +8,7 @@ const urlsToCache = [
   "./icon-180.png"
 ];
 
-// インストール時にキャッシュ
+// インストール
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -17,7 +17,7 @@ self.addEventListener("install", event => {
   );
 });
 
-// リクエスト時にキャッシュから取得
+// リクエスト時
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(response => {
@@ -26,15 +26,15 @@ self.addEventListener("fetch", event => {
   );
 });
 
-// 古いキャッシュを削除
+// アップデート時キャッシュ削除
 self.addEventListener("activate", event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(keyList =>
+    caches.keys().then(cacheNames =>
       Promise.all(
-        keyList.map(key => {
-          if (!cacheWhitelist.includes(key)) {
-            return caches.delete(key);
+        cacheNames.map(name => {
+          if (!cacheWhitelist.includes(name)) {
+            return caches.delete(name);
           }
         })
       )
