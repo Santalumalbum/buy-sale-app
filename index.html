@@ -8,111 +8,88 @@
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="icon-180.png">
   <meta name="theme-color" content="#1e272e">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 1rem; background-color: #1e272e; color: #ffffff; }
+    h2 { text-align: center; font-size: 2.5rem; margin-bottom: 2rem; color: #00d8a7; }
+    form { max-width: 700px; margin: auto; background-color: #2f3640; padding: 3rem; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 216, 167, 0.3); }
+    .form-group { margin-bottom: 2rem; }
+    label { display: block; font-weight: 600; font-size: 1.6rem; margin-bottom: 0.8rem; }
+    input, select, textarea { width: 100%; font-size: 1.8rem; padding: 1.2rem; border: none; border-radius: 10px; box-sizing: border-box; background-color: #dcdde1; color: #2f3640; }
+    .inline-group { display: flex; justify-content: space-between; gap: 2%; }
+    .inline-group > div { width: 48%; }
+    .button-set { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.5rem; }
+    .amount-button { flex: 1 0 30%; padding: 1.5rem; font-size: 2rem; border: none; border-radius: 8px; background-color: #00a8ff; color: white; cursor: pointer; }
+    .amount-button.selected { background-color: #00d8a7; }
+    #otherAmountSelect { display: none; margin-top: 1rem; }
+    .submit-button { width: 100%; padding: 2rem; font-size: 2rem; background-color: #00d8a7; border: none; color: #1e272e; font-weight: bold; border-radius: 12px; cursor: pointer; margin-top: 2rem; }
+    .submit-button:hover { background-color: #26de81; }
+    .slide-in-message { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background-color: #00d8a7; color: #1e272e; padding: 1.5rem 2rem; font-size: 2rem; font-weight: bold; border-radius: 10px; opacity: 0; visibility: hidden; transition: top 0.5s, opacity 0.5s; z-index: 9999; }
+    .slide-in-message.show { top: 20px; opacity: 1; visibility: visible; }
+  </style>
 </head>
 <body>
   <h2>株式売買記録フォーム</h2>
   <form id="tradeForm">
-    <!-- フォーム内容は省略 -->
+    <div class="form-group">
+      <label for="code">コード</label>
+      <input type="number" id="code" required>
+    </div>
+    <div class="inline-group">
+      <div class="form-group">
+        <label for="name">銘柄名</label>
+        <input type="text" id="name" readonly>
+      </div>
+      <div class="form-group">
+        <label for="price">買値(売値)</label>
+        <input type="number" step="0.1" id="price" required>
+      </div>
+    </div>
+    <div class="inline-group">
+      <div class="form-group">
+        <label for="category">区分</label>
+        <select id="category">
+          <option value="NISA">NISA</option>
+          <option value="特定">特定</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="status">保有状況</label>
+        <select id="status">
+          <option value="保有中">保有中</option>
+          <option value="決済済み">決済済み</option>
+        </select>
+      </div>
+    </div>
+    <div class="inline-group">
+      <div class="form-group">
+        <label for="date">売買日</label>
+        <input type="date" id="date" required>
+      </div>
+      <div class="form-group">
+        <label for="transactionType">売買種別</label>
+        <select id="transactionType">
+          <option value="買い">買い</option>
+          <option value="売り">売り</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>売買株数</label>
+      <div class="button-set" id="amountButtons">
+        <button type="button" class="amount-button" data-value="1">1</button>
+        <button type="button" class="amount-button" data-value="2">2</button>
+        <button type="button" class="amount-button" data-value="3">3</button>
+        <button type="button" class="amount-button" data-value="4">4</button>
+        <button type="button" class="amount-button" data-value="5">5</button>
+        <button type="button" class="amount-button" data-value="6">6</button>
+        <button type="button" class="amount-button" data-value="other">その他</button>
+      </div>
+      <select id="otherAmountSelect">
+        <option value="">-- 選択してください --</option>
+      </select>
+    </div>
+    <button type="submit" class="submit-button">記録する</button>
   </form>
   <div id="slideInMessage" class="slide-in-message">取引が記録されました！</div>
-  <script>
-    const SUPABASE_URL = "https://vyqacmvwaxaccqlukalq.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5cWFjbXZ3YXhhY2NxbHVrYWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5Mjk2NDQsImV4cCI6MjA2MjUwNTY0NH0.FPYXAFG7MIH-GzLn_D2wirhBkxAlUw3dNq_BZqMzEDU";
-
-    let stockMap = {};
-    let selectedAmount = "1";
-
-    document.addEventListener("DOMContentLoaded", function () {
-      // 銘柄取得
-      fetch(`${SUPABASE_URL}/rest/v1/stocks?select=code,name`, {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`
-        }
-      })
-        .then(res => res.json())
-        .then(data => {
-          data.forEach(stock => {
-            stockMap[stock.code] = stock.name;
-          });
-        });
-
-      document.getElementById("date").value = new Date().toISOString().split("T")[0];
-
-      const codeInput = document.getElementById("code");
-      codeInput.addEventListener("input", function (e) {
-        let value = e.target.value.replace(/\D/g, "").slice(0, 4);
-        e.target.value = value;
-        document.getElementById("name").value = stockMap[value] || "";
-        if (value.length === 4) {
-          setTimeout(() => document.getElementById("price").focus(), 100);
-        }
-      });
-
-      const otherSelect = document.getElementById("otherAmountSelect");
-      for (let i = 7; i <= 100; i++) {
-        const option = document.createElement("option");
-        option.value = i;
-        option.textContent = i;
-        otherSelect.appendChild(option);
-      }
-
-      document.querySelectorAll(".amount-button").forEach(button => {
-        button.addEventListener("click", function () {
-          document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
-          this.classList.add("selected");
-          selectedAmount = this.dataset.value;
-          document.getElementById("otherAmountSelect").style.display = selectedAmount === "other" ? "block" : "none";
-        });
-      });
-
-      document.getElementById("tradeForm").addEventListener("submit", async function (e) {
-        e.preventDefault();
-
-        const finalAmount = selectedAmount === "other"
-          ? document.getElementById("otherAmountSelect").value
-          : selectedAmount;
-
-        if (!finalAmount) {
-          alert("売買株数を選択してください");
-          return;
-        }
-
-        const data = {
-          code: codeInput.value,
-          name: document.getElementById("name").value,
-          category: document.getElementById("category").value,
-          status: document.getElementById("status").value,
-          date: document.getElementById("date").value,
-          transactionType: document.getElementById("transactionType").value,
-          price: parseFloat(document.getElementById("price").value),
-          amount: parseInt(finalAmount)
-        };
-
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/trades`, {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        });
-
-        const result = await res.json();
-        const message = document.getElementById("slideInMessage");
-        message.textContent = "取引が記録されました！";
-        message.classList.add("show");
-        setTimeout(() => message.classList.remove("show"), 5000);
-
-        this.reset();
-        document.getElementById("date").value = new Date().toISOString().split("T")[0];
-        document.getElementById("name").value = "";
-        document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
-        document.getElementById("otherAmountSelect").style.display = "none";
-      });
-    });
-  </script>
 </body>
 </html>
