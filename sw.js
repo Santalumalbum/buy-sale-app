@@ -1,15 +1,15 @@
-const CACHE_NAME = 'stock-trade-app-v1';
+const CACHE_NAME = "stock-app-cache-v1";
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-180.png',
-  './icon-192.png',
-  './icon-512.png'
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./icon-180.png"
 ];
 
 // インストール時にキャッシュ
-self.addEventListener('install', event => {
+self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache);
@@ -17,25 +17,22 @@ self.addEventListener('install', event => {
   );
 });
 
-// リクエストをキャッシュから返すかネットワーク
-self.addEventListener('fetch', event => {
+// リクエスト時にキャッシュから取得
+self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request);
-    }).catch(() => {
-      // オフラインで index.html を返す（必要に応じて）
-      return caches.match('./index.html');
     })
   );
 });
 
-// 古いキャッシュの削除
-self.addEventListener('activate', event => {
+// 古いキャッシュを削除
+self.addEventListener("activate", event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(keys =>
+    caches.keys().then(keyList =>
       Promise.all(
-        keys.map(key => {
+        keyList.map(key => {
           if (!cacheWhitelist.includes(key)) {
             return caches.delete(key);
           }
