@@ -4,110 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>株式売買記録フォーム</title>
-
-  <!-- PWA関連 -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="icon-180.png">
   <meta name="theme-color" content="#1e272e">
-
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 1rem;
-      background-color: #1e272e;
-      color: #ffffff;
-    }
-    h2 {
-      text-align: center;
-      font-size: 2.5rem;
-      margin-bottom: 2rem;
-      color: #00d8a7;
-    }
-    form {
-      max-width: 700px;
-      margin: auto;
-      background-color: #2f3640;
-      padding: 3rem;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 216, 167, 0.3);
-    }
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 1rem; background-color: #1e272e; color: #ffffff; }
+    h2 { text-align: center; font-size: 2.5rem; margin-bottom: 2rem; color: #00d8a7; }
+    form { max-width: 700px; margin: auto; background-color: #2f3640; padding: 3rem; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 216, 167, 0.3); }
     .form-group { margin-bottom: 2rem; }
-    label {
-      display: block;
-      font-weight: 600;
-      font-size: 1.6rem;
-      margin-bottom: 0.8rem;
-    }
-    input, select, textarea {
-      width: 100%;
-      font-size: 1.8rem;
-      padding: 1.2rem;
-      border: none;
-      border-radius: 10px;
-      box-sizing: border-box;
-      background-color: #dcdde1;
-      color: #2f3640;
-    }
-    .inline-group {
-      display: flex;
-      justify-content: space-between;
-      gap: 2%;
-    }
+    label { display: block; font-weight: 600; font-size: 1.6rem; margin-bottom: 0.8rem; }
+    input, select, textarea { width: 100%; font-size: 1.8rem; padding: 1.2rem; border: none; border-radius: 10px; box-sizing: border-box; background-color: #dcdde1; color: #2f3640; }
+    .inline-group { display: flex; justify-content: space-between; gap: 2%; }
     .inline-group > div { width: 48%; }
-    .button-set {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-top: 1.5rem;
-    }
-    .amount-button {
-      flex: 1 0 30%;
-      padding: 1.5rem;
-      font-size: 2rem;
-      border: none;
-      border-radius: 8px;
-      background-color: #00a8ff;
-      color: white;
-      cursor: pointer;
-    }
+    .button-set { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.5rem; }
+    .amount-button { flex: 1 0 30%; padding: 1.5rem; font-size: 2rem; border: none; border-radius: 8px; background-color: #00a8ff; color: white; cursor: pointer; }
     .amount-button.selected { background-color: #00d8a7; }
     #otherAmountSelect { display: none; margin-top: 1rem; }
-    .submit-button {
-      width: 100%;
-      padding: 2rem;
-      font-size: 2rem;
-      background-color: #00d8a7;
-      border: none;
-      color: #1e272e;
-      font-weight: bold;
-      border-radius: 12px;
-      cursor: pointer;
-      margin-top: 2rem;
-    }
+    .submit-button { width: 100%; padding: 2rem; font-size: 2rem; background-color: #00d8a7; border: none; color: #1e272e; font-weight: bold; border-radius: 12px; cursor: pointer; margin-top: 2rem; }
     .submit-button:hover { background-color: #26de81; }
-    .slide-in-message {
-      position: fixed;
-      top: -100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #00d8a7;
-      color: #1e272e;
-      padding: 1.5rem 2rem;
-      font-size: 2rem;
-      font-weight: bold;
-      border-radius: 10px;
-      opacity: 0;
-      visibility: hidden;
-      transition: top 0.5s, opacity 0.5s;
-      z-index: 9999;
-    }
-    .slide-in-message.show {
-      top: 20px;
-      opacity: 1;
-      visibility: visible;
-    }
+    .slide-in-message { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background-color: #00d8a7; color: #1e272e; padding: 1.5rem 2rem; font-size: 2rem; font-weight: bold; border-radius: 10px; opacity: 0; visibility: hidden; transition: top 0.5s, opacity 0.5s; z-index: 9999; }
+    .slide-in-message.show { top: 20px; opacity: 1; visibility: visible; }
   </style>
 </head>
 <body>
@@ -174,8 +91,10 @@
     <button type="submit" class="submit-button">記録する</button>
   </form>
   <div id="slideInMessage" class="slide-in-message">取引が記録されました！</div>
-
   <script>
+    const SUPABASE_URL = "https://vyqacmvwaxaccqlukalq.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5cWFjbXZ3YXhhY2NxbHVrYWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5Mjk2NDQsImV4cCI6MjA2MjUwNTY0NH0.FPYXAFG7MIH-GzLn_D2wirhBkxAlUw3dNq_BZqMzEDU";
+
     const otherSelect = document.getElementById("otherAmountSelect");
     for (let i = 7; i <= 100; i++) {
       const option = document.createElement("option");
@@ -188,15 +107,18 @@
     let selectedAmount = "1";
 
     document.addEventListener("DOMContentLoaded", function () {
-      // 銘柄リスト取得
-      fetch("https://script.google.com/macros/s/AKfycbzxgzP_Bo6C8xX6TMAOWGSBICuBTlpKP58eos_GNpTatSJkS9RdeDdip-BM2-snZ4f4/exec?mode=stockList")
-        .then(response => response.json())
-        .then(data => {
-          data.forEach(([code, name]) => {
-            stockMap[code] = name;
-          });
-        })
-        .catch(err => console.error("銘柄リストの取得に失敗しました", err));
+      fetch(`${SUPABASE_URL}/rest/v1/stocks`, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(stock => {
+          stockMap[stock.code] = stock.name;
+        });
+      });
 
       document.getElementById("date").value = new Date().toISOString().split("T")[0];
 
@@ -238,23 +160,23 @@
           status: document.getElementById("status").value,
           date: document.getElementById("date").value,
           transactionType: document.getElementById("transactionType").value,
-          price: document.getElementById("price").value,
-          amount: finalAmount
+          price: parseFloat(document.getElementById("price").value),
+          amount: parseInt(finalAmount)
         };
 
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzxgzP_Bo6C8xX6TMAOWGSBICuBTlpKP58eos_GNpTatSJkS9RdeDdip-BM2-snZ4f4/exec", {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/trades`, {
           method: "POST",
-          body: JSON.stringify(data),
-          headers: { "Content-Type": "application/json" }
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
         });
 
         const result = await res.json();
         const message = document.getElementById("slideInMessage");
-        if (result.result) {
-          message.textContent = `取引が記録されました！（K1の値：${result.result}）`;
-        } else {
-          message.textContent = `エラー：${result.error || "送信できませんでした"}`;
-        }
+        message.textContent = "取引が記録されました！";
         message.classList.add("show");
         setTimeout(() => message.classList.remove("show"), 5000);
 
@@ -265,10 +187,6 @@
         document.getElementById("otherAmountSelect").style.display = "none";
       });
     });
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(console.error);
-    }
   </script>
 </body>
 </html>
