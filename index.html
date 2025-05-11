@@ -91,5 +91,105 @@
     <button type="submit" class="submit-button">記録する</button>
   </form>
   <div id="slideInMessage" class="slide-in-message">取引が記録されました！</div>
+  <script>
+    const SUPABASE_URL = "https://vyqacmvwaxaccqlukalq.supabase.co";
+    const SUPABASE_KEY = "あなたのAPIキーに置き換えてください";
+
+    let stockMap = {};
+    let selectedAmount = "1";
+
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch(`${SUPABASE_URL}/rest/v1/stocks?select=code,name`, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        data.forEach(stock => {
+          stockMap[stock.code] = stock.name;
+        });
+      });
+
+      document.getElementById("date").value = new Date().toISOString().split("T")[0];
+
+      const codeInput = document.getElementById("code");
+      codeInput.addEventListener("input", function (e) {
+        let value = e.target.value.replace(/\D/g, "").slice(0, 4);
+        e.target.value = value;
+        document.getElementById("name").value = stockMap[value] || "";
+        if (value.length === 4) {
+          setTimeout(() => document.getElementById("price").focus(), 100);
+        }
+      });
+
+      const otherSelect = document.getElementById("otherAmountSelect");
+      for (let i = 7; i <= 100; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = i;
+        otherSelect.appendChild(option);
+      }
+
+      document.querySelectorAll(".amount-button").forEach(button => {
+        button.addEventListener("click", function () {
+          document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
+          this.classList.add("selected");
+          selectedAmount = this.dataset.value;
+          document.getElementById("otherAmountSelect").style.display = selectedAmount === "other" ? "block" : "none";
+        });
+      });
+
+      document.getElementById("tradeForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const finalAmount = selectedAmount === "other"
+          ? document.getElementById("otherAmountSelect").value
+          : selectedAmount;
+
+        if (!finalAmount) {
+          alert("売買株数を選択してください");
+          return;
+        }
+
+        const data = {
+          code: codeInput.value,
+          name: document.getElementById("name").value,
+          category: document.getElementById("category").value,
+          status: document.getElementById("status").value,
+          date: document.getElementById("date").value,
+          transactionType: document.getElementById("transactionType").value,
+          price: parseFloat(document.getElementById("price").value),
+          amount: parseInt(finalAmount)
+        };
+
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/trades`, {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+
+        const message = document.getElementById("slideInMessage");
+        if (res.ok) {
+          message.textContent = "取引が記録されました！";
+        } else {
+          message.textContent = "送信に失敗しました";
+        }
+        message.classList.add("show");
+        setTimeout(() => message.classList.remove("show"), 5000);
+
+        this.reset();
+        document.getElementById("date").value = new Date().toISOString().split("T")[0];
+        document.getElementById("name").value = "";
+        document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
+        document.getElementById("otherAmountSelect").style.display = "none";
+      });
+    });
+  </script>
 </body>
 </html>
