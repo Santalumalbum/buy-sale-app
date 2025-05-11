@@ -19,14 +19,12 @@
       background-color: #1e272e;
       color: #ffffff;
     }
-
     h2 {
       text-align: center;
-      font-size: 2.5rem; /* 視認性をさらに高く */
+      font-size: 2.5rem;
       margin-bottom: 2rem;
       color: #00d8a7;
     }
-
     form {
       max-width: 700px;
       margin: auto;
@@ -35,21 +33,16 @@
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 216, 167, 0.3);
     }
-
-    .form-group {
-      margin-bottom: 2rem;
-    }
-
+    .form-group { margin-bottom: 2rem; }
     label {
       display: block;
       font-weight: 600;
-      font-size: 1.6rem; /* ラベルの文字を大きく */
+      font-size: 1.6rem;
       margin-bottom: 0.8rem;
     }
-
     input, select, textarea {
       width: 100%;
-      font-size: 1.8rem; /* 高齢者向けに文字を大きく */
+      font-size: 1.8rem;
       padding: 1.2rem;
       border: none;
       border-radius: 10px;
@@ -57,24 +50,18 @@
       background-color: #dcdde1;
       color: #2f3640;
     }
-
     .inline-group {
       display: flex;
       justify-content: space-between;
       gap: 2%;
     }
-
-    .inline-group > div {
-      width: 48%;
-    }
-
+    .inline-group > div { width: 48%; }
     .button-set {
       display: flex;
       flex-wrap: wrap;
       gap: 1.5rem;
       margin-top: 1.5rem;
     }
-
     .amount-button {
       flex: 1 0 30%;
       padding: 1.5rem;
@@ -85,16 +72,8 @@
       color: white;
       cursor: pointer;
     }
-
-    .amount-button.selected {
-      background-color: #00d8a7;
-    }
-
-    #otherAmountSelect {
-      display: none;
-      margin-top: 1rem;
-    }
-
+    .amount-button.selected { background-color: #00d8a7; }
+    #otherAmountSelect { display: none; margin-top: 1rem; }
     .submit-button {
       width: 100%;
       padding: 2rem;
@@ -107,11 +86,7 @@
       cursor: pointer;
       margin-top: 2rem;
     }
-
-    .submit-button:hover {
-      background-color: #26de81;
-    }
-
+    .submit-button:hover { background-color: #26de81; }
     .slide-in-message {
       position: fixed;
       top: -100px;
@@ -128,7 +103,6 @@
       transition: top 0.5s, opacity 0.5s;
       z-index: 9999;
     }
-
     .slide-in-message.show {
       top: 20px;
       opacity: 1;
@@ -138,13 +112,70 @@
 </head>
 <body>
   <h2>株式売買記録フォーム</h2>
-  <form id="tradeForm"> <!-- フォーム内容そのまま保持 -->
-    <!-- 中略：フォーム内容はそのままコピペ -->
+  <form id="tradeForm">
+    <div class="form-group">
+      <label for="code">コード</label>
+      <input type="number" id="code" required>
+    </div>
+    <div class="inline-group">
+      <div class="form-group">
+        <label for="name">銘柄名</label>
+        <input type="text" id="name" readonly>
+      </div>
+      <div class="form-group">
+        <label for="price">買値(売値)</label>
+        <input type="number" step="0.1" id="price" required>
+      </div>
+    </div>
+    <div class="inline-group">
+      <div class="form-group">
+        <label for="category">区分</label>
+        <select id="category">
+          <option value="NISA">NISA</option>
+          <option value="特定">特定</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="status">保有状況</label>
+        <select id="status">
+          <option value="保有中">保有中</option>
+          <option value="決済済み">決済済み</option>
+        </select>
+      </div>
+    </div>
+    <div class="inline-group">
+      <div class="form-group">
+        <label for="date">売買日</label>
+        <input type="date" id="date" required>
+      </div>
+      <div class="form-group">
+        <label for="transactionType">売買種別</label>
+        <select id="transactionType">
+          <option value="買い">買い</option>
+          <option value="売り">売り</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>売買株数</label>
+      <div class="button-set" id="amountButtons">
+        <button type="button" class="amount-button" data-value="1">1</button>
+        <button type="button" class="amount-button" data-value="2">2</button>
+        <button type="button" class="amount-button" data-value="3">3</button>
+        <button type="button" class="amount-button" data-value="4">4</button>
+        <button type="button" class="amount-button" data-value="5">5</button>
+        <button type="button" class="amount-button" data-value="6">6</button>
+        <button type="button" class="amount-button" data-value="other">その他</button>
+      </div>
+      <select id="otherAmountSelect">
+        <option value="">-- 選択してください --</option>
+      </select>
+    </div>
+    <button type="submit" class="submit-button">記録する</button>
   </form>
   <div id="slideInMessage" class="slide-in-message">取引が記録されました！</div>
 
   <script>
-    // 売買株数のセレクト生成
     const otherSelect = document.getElementById("otherAmountSelect");
     for (let i = 7; i <= 100; i++) {
       const option = document.createElement("option");
@@ -157,6 +188,16 @@
     let selectedAmount = "1";
 
     document.addEventListener("DOMContentLoaded", function () {
+      // 銘柄リスト取得
+      fetch("https://script.google.com/macros/s/AKfycbzxgzP_Bo6C8xX6TMAOWGSBICuBTlpKP58eos_GNpTatSJkS9RdeDdip-BM2-snZ4f4/exec?mode=stockList")
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(([code, name]) => {
+            stockMap[code] = name;
+          });
+        })
+        .catch(err => console.error("銘柄リストの取得に失敗しました", err));
+
       document.getElementById("date").value = new Date().toISOString().split("T")[0];
 
       const codeInput = document.getElementById("code");
@@ -201,13 +242,10 @@
           amount: finalAmount
         };
 
-        // GASへ送信
-        const res = await fetch("https://script.google.com/macros/s/AKfycbzn1RF91m0uK4YQL-crcE8zt_DU9GLrjaqG9Sp98c1FTVaVfeG0YGZesd5RYBAswkNC/exec", {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbzxgzP_Bo6C8xX6TMAOWGSBICuBTlpKP58eos_GNpTatSJkS9RdeDdip-BM2-snZ4f4/exec", {
           method: "POST",
           body: JSON.stringify(data),
-          headers: {
-            "Content-Type": "application/json"
-          }
+          headers: { "Content-Type": "application/json" }
         });
 
         const result = await res.json();
@@ -228,7 +266,6 @@
       });
     });
 
-    // Service Worker登録（PWA）
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(console.error);
     }
