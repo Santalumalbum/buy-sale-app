@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>株式売買記録フォーム</title>
+
+  <!-- PWA関連 -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <meta name="theme-color" content="#1e272e">
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background-color: #1e272e;
+      color: #ffffff;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 2.5rem; /* 視認性をさらに高く */
+      margin-bottom: 2rem;
+      color: #00d8a7;
+    }
+
+    form {
+      max-width: 700px;
+      margin: auto;
+      background-color: #2f3640;
+      padding: 3rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 216, 167, 0.3);
+    }
+
+    .form-group {
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 1.6rem; /* ラベルの文字を大きく */
+      margin-bottom: 0.8rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      font-size: 1.8rem; /* 高齢者向けに文字を大きく */
+      padding: 1.2rem;
+      border: none;
+      border-radius: 10px;
+      box-sizing: border-box;
+      background-color: #dcdde1;
+      color: #2f3640;
+    }
+
+    .inline-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 2%;
+    }
+
+    .inline-group > div {
+      width: 48%;
+    }
+
+    .button-set {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .amount-button {
+      flex: 1 0 30%;
+      padding: 1.5rem;
+      font-size: 2rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #00a8ff;
+      color: white;
+      cursor: pointer;
+    }
+
+    .amount-button.selected {
+      background-color: #00d8a7;
+    }
+
+    #otherAmountSelect {
+      display: none;
+      margin-top: 1rem;
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 2rem;
+      font-size: 2rem;
+      background-color: #00d8a7;
+      border: none;
+      color: #1e272e;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 2rem;
+    }
+
+    .submit-button:hover {
+      background-color: #26de81;
+    }
+
+    .slide-in-message {
+      position: fixed;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #00d8a7;
+      color: #1e272e;
+      padding: 1.5rem 2rem;
+      font-size: 2rem;
+      font-weight: bold;
+      border-radius: 10px;
+      opacity: 0;
+      visibility: hidden;
+      transition: top 0.5s, opacity 0.5s;
+      z-index: 9999;
+    }
+
+    .slide-in-message.show {
+      top: 20px;
+      opacity: 1;
+      visibility: visible;
+    }
+  </style>
+</head>
+<body>
+  <h2>株式売買記録フォーム</h2>
+  <form id="tradeForm"> <!-- フォーム内容そのまま保持 -->
+    <!-- 中略：フォーム内容はそのままコピペ -->
+  </form>
+  <div id="slideInMessage" class="slide-in-message">取引が記録されました！</div>
+
+  <script>
+    // 売買株数のセレクト生成
+    const otherSelect = document.getElementById("otherAmountSelect");
+    for (let i = 7; i <= 100; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.textContent = i;
+      otherSelect.appendChild(option);
+    }
+
+    let stockMap = {};
+    let selectedAmount = "1";
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById("date").value = new Date().toISOString().split("T")[0];
+
+      const codeInput = document.getElementById("code");
+      codeInput.addEventListener("input", function (e) {
+        let value = e.target.value.replace(/\D/g, "").slice(0, 4);
+        e.target.value = value;
+        document.getElementById("name").value = stockMap[value] || "";
+        if (value.length === 4) {
+          setTimeout(() => document.getElementById("price").focus(), 100);
+        }
+      });
+
+      document.querySelectorAll(".amount-button").forEach(button => {
+        button.addEventListener("click", function () {
+          document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
+          this.classList.add("selected");
+          selectedAmount = this.dataset.value;
+          document.getElementById("otherAmountSelect").style.display = selectedAmount === "other" ? "block" : "none";
+        });
+      });
+
+      document.getElementById("tradeForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const finalAmount = selectedAmount === "other"
+          ? document.getElementById("otherAmountSelect").value
+          : selectedAmount;
+
+        if (!finalAmount) {
+          alert("売買株数を選択してください");
+          return;
+        }
+
+        const data = {
+          code: codeInput.value,
+          name: document.getElementById("name").value,
+          category: document.getElementById("category").value,
+          status: document.getElementById("status").value,
+          date: document.getElementById("date").value,
+          transactionType: document.getElementById("transactionType").value,
+          price: document.getElementById("price").value,
+          amount: finalAmount
+        };
+
+        // GASへ送信
+        const res = await fetch("https://script.google.com/macros/s/AKfycbzn1RF91m0uK4YQL-crcE8zt_DU9GLrjaqG9Sp98c1FTVaVfeG0YGZesd5RYBAswkNC/exec", {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+        const result = await res.json();
+        const message = document.getElementById("slideInMessage");
+        if (result.result) {
+          message.textContent = `取引が記録されました！（K1の値：${result.result}）`;
+        } else {
+          message.textContent = `エラー：${result.error || "送信できませんでした"}`;
+        }
+        message.classList.add("show");
+        setTimeout(() => message.classList.remove("show"), 5000);
+
+        this.reset();
+        document.getElementById("date").value = new Date().toISOString().split("T")[0];
+        document.getElementById("name").value = "";
+        document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
+        document.getElementById("otherAmountSelect").style.display = "none";
+      });
+    });
+
+    // Service Worker登録（PWA）
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    }
+  </script>
+</body>
+</html>
