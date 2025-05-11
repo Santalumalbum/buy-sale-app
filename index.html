@@ -14,7 +14,7 @@
     form { max-width: 700px; margin: auto; background-color: #2f3640; padding: 3rem; border-radius: 12px; box-shadow: 0 0 15px rgba(0, 216, 167, 0.3); }
     .form-group { margin-bottom: 2rem; }
     label { display: block; font-weight: 600; font-size: 1.6rem; margin-bottom: 0.8rem; }
-    input, select, textarea { width: 100%; font-size: 1.8rem; padding: 1.2rem; border: none; border-radius: 10px; box-sizing: border-box; background-color: #dcdde1; color: #2f3640; }
+    input, select { width: 100%; font-size: 1.8rem; padding: 1.2rem; border: none; border-radius: 10px; box-sizing: border-box; background-color: #dcdde1; color: #2f3640; }
     .inline-group { display: flex; justify-content: space-between; gap: 2%; }
     .inline-group > div { width: 48%; }
     .button-set { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.5rem; }
@@ -93,7 +93,7 @@
   <div id="slideInMessage" class="slide-in-message">取引が記録されました！</div>
   <script>
     const SUPABASE_URL = "https://vyqacmvwaxaccqlukalq.supabase.co";
-    const SUPABASE_KEY = "あなたのAPIキーに置き換えてください";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5cWFjbXZ3YXhhY2NxbHVrYWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5Mjk2NDQsImV4cCI6MjA2MjUwNTY0NH0.FPYXAFG7MIH-GzLn_D2wirhBkxAlUw3dNq_BZqMzEDU";
 
     let stockMap = {};
     let selectedAmount = "1";
@@ -101,8 +101,8 @@
     document.addEventListener("DOMContentLoaded", function () {
       fetch(`${SUPABASE_URL}/rest/v1/stocks?select=code,name`, {
         headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`
+          "apikey": SUPABASE_KEY,
+          "Authorization": `Bearer ${SUPABASE_KEY}`
         }
       })
       .then(res => res.json())
@@ -116,7 +116,7 @@
 
       const codeInput = document.getElementById("code");
       codeInput.addEventListener("input", function (e) {
-        let value = e.target.value.replace(/\D/g, "").slice(0, 4);
+        const value = e.target.value.replace(/\\D/g, "").slice(0, 4);
         e.target.value = value;
         document.getElementById("name").value = stockMap[value] || "";
         if (value.length === 4) {
@@ -167,8 +167,8 @@
         const res = await fetch(`${SUPABASE_URL}/rest/v1/trades`, {
           method: "POST",
           headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
             "Content-Type": "application/json"
           },
           body: JSON.stringify(data)
