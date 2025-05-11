@@ -1,10 +1,12 @@
 {
   "name": "株式売買記録",
   "short_name": "売買記録",
+  "description": "Supabase 連携の株式売買記録アプリ",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1e272e",
   "theme_color": "#00d8a7",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
