@@ -92,31 +92,16 @@
   </form>
   <div id="slideInMessage" class="slide-in-message">取引が記録されました！</div>
   <script>
-    const SUPABASE_URL = "https://vyqacmvwaxaccqlukalq.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5cWFjbXZ3YXhhY2NxbHVrYWxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY5Mjk2NDQsImV4cCI6MjA2MjUwNTY0NH0.FPYXAFG7MIH-GzLn_D2wirhBkxAlUw3dNq_BZqMzEDU";
-
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzVd17Yqq2k4IdC9uYohtOv3kYRHnD4wt6PNY5TYiDJ5tHo4xn9I0IlqIO2KJ1ns6p-/exec"; // GASのWebアプリURLに置き換え
     let stockMap = {};
     let selectedAmount = "1";
 
     document.addEventListener("DOMContentLoaded", function () {
-      fetch(`${SUPABASE_URL}/rest/v1/stocks?select=code,name`, {
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Authorization": "Bearer " + SUPABASE_KEY
-        }
-      })
-      .then(res => res.json())
-      .then(data => {
-        data.forEach(stock => {
-          stockMap[stock.code] = stock.name;
-        });
-      });
-
       document.getElementById("date").value = new Date().toISOString().split("T")[0];
 
       const codeInput = document.getElementById("code");
       codeInput.addEventListener("input", function (e) {
-        const value = e.target.value.replace(/\\D/g, "").slice(0, 4);
+        const value = e.target.value.replace(/\D/g, "").slice(0, 4);
         e.target.value = value;
         document.getElementById("name").value = stockMap[value] || "";
         if (value.length === 4) {
@@ -164,30 +149,34 @@
           amount: parseInt(finalAmount)
         };
 
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/trades`, {
-          method: "POST",
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${SUPABASE_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        });
+        try {
+          const res = await fetch(GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode: "recordTrade", data })
+          });
 
-        const message = document.getElementById("slideInMessage");
-        if (res.ok) {
-          message.textContent = "取引が記録されました！";
-        } else {
-          message.textContent = "送信に失敗しました";
+          const result = await res.json();
+          const message = document.getElementById("slideInMessage");
+
+          if (result.result === "success") {
+            message.textContent = `本日取引合計 ${Number(result.total).toLocaleString()}円`;
+          } else {
+            message.textContent = "送信に失敗しました";
+          }
+
+          message.classList.add("show");
+          setTimeout(() => message.classList.remove("show"), 5000);
+
+          this.reset();
+          document.getElementById("date").value = new Date().toISOString().split("T")[0];
+          document.getElementById("name").value = "";
+          document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
+          document.getElementById("otherAmountSelect").style.display = "none";
+        } catch (err) {
+          console.error("送信エラー:", err);
+          alert("通信エラーが発生しました");
         }
-        message.classList.add("show");
-        setTimeout(() => message.classList.remove("show"), 5000);
-
-        this.reset();
-        document.getElementById("date").value = new Date().toISOString().split("T")[0];
-        document.getElementById("name").value = "";
-        document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
-        document.getElementById("otherAmountSelect").style.display = "none";
       });
     });
   </script>
