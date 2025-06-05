@@ -150,31 +150,26 @@
         };
 
         try {
-          const res = await fetch(GAS_URL, {
+          const response = await fetch(GAS_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ mode: "recordTrade", data })
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              mode: "recordTrade",
+              data: data
+            })
           });
 
-          const result = await res.json();
-          const message = document.getElementById("slideInMessage");
+          const result = await response.json();
 
           if (result.result === "success") {
-            message.textContent = `本日取引合計 ${Number(result.total).toLocaleString()}円`;
+            // 表示処理
           } else {
-            message.textContent = "送信に失敗しました";
+            // エラーメッセージ
           }
-
-          message.classList.add("show");
-          setTimeout(() => message.classList.remove("show"), 5000);
-
-          this.reset();
-          document.getElementById("date").value = new Date().toISOString().split("T")[0];
-          document.getElementById("name").value = "";
-          document.querySelectorAll(".amount-button").forEach(btn => btn.classList.remove("selected"));
-          document.getElementById("otherAmountSelect").style.display = "none";
-        } catch (err) {
-          console.error("送信エラー:", err);
+        } catch (error) {
+          console.error("Fetch error:", error);
           alert("通信エラーが発生しました");
         }
       });
