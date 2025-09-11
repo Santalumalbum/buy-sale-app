@@ -5,15 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
   <meta name="theme-color" content="#f08c00" />
 
-  <!-- iOS: ホーム画面追加用 -->
+  <!-- iOS: ホーム画面用（manifestはiOSでは無視されるので、これが超重要） -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=2" />
+  <!-- 予備（iOSはルートにある apple-touch-icon.png を自動探索することがある） -->
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-180.png?v=2" />
 
-  <!-- PWA manifest -->
-  <link rel="manifest" href="./manifest.webmanifest" />
+  <!-- Android等向け -->
+  <link rel="manifest" href="./manifest.webmanifest?v=2" />
 
-  <title>見学申込を開く</title>
+  <title>株売買記録履歴</title>
   <style>
     body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans JP',sans-serif;margin:0;background:#f9f5ee;color:#2a2a2a}
     .wrap{max-width:640px;margin:10vh auto;padding:24px;text-align:center}
@@ -25,19 +27,28 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>見学申込を開いています…</h1>
-      <p>自動で開かない場合は下のボタンを押してください。</p>
-      <p><a id="openBtn" class="btn" href="https://script.google.com/macros/s/AKfycbyNGA2RrJaEBotxBqCaJ7Di0pl_NWfYC6t7wLAMGqNqq0loHhl7TTK3iCcUZucIkus3Cw/exec">開く</a></p>
+      <h1>株売買記録</h1>
+      <p>ホーム画面に追加するとアイコンから起動できます。</p>
+      <p><button id="openBtn" class="btn" type="button">今すぐ開く</button></p>
       <p class="meta">© Your Org</p>
     </div>
   </div>
 
   <script>
     const TARGET = "https://script.google.com/macros/s/AKfycbyNGA2RrJaEBotxBqCaJ7Di0pl_NWfYC6t7wLAMGqNqq0loHhl7TTK3iCcUZucIkus3Cw/exec";
-    // 戻る履歴を汚さない（replace）
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => location.replace(TARGET), 150);
+
+    // ① ホーム画面（standalone）から起動されたときだけ自動遷移
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    if (isStandalone) {
+      location.replace(TARGET);
+    }
+
+    // ② それ以外は静止 → ボタンで明示的に開く
+    document.getElementById('openBtn').addEventListener('click', () => {
+      // 履歴を汚さない
+      location.replace(TARGET);
     });
   </script>
 </body>
 </html>
+
